@@ -99,9 +99,10 @@ describe('AJV8Validator', () => {
         validator.isValid(schema, formData, rootSchema);
 
         // Root schema is added twice
-        expect(addSchemaSpy).toHaveBeenCalledTimes(2);
+        expect(addSchemaSpy).toHaveBeenCalledTimes(3);
         expect(addSchemaSpy).toHaveBeenNthCalledWith(1, expect.objectContaining(rootSchema), rootSchema.$id);
         expect(addSchemaSpy).toHaveBeenNthCalledWith(2, expect.objectContaining(schema), schema.$id);
+        expect(addSchemaSpy).toHaveBeenLastCalledWith(expect.objectContaining(rootSchema), rootSchema.$id);
       });
       it('should fallback to using compile', () => {
         const schema: RJSFSchema = {
@@ -593,9 +594,10 @@ describe('AJV8Validator', () => {
         validator.isValid(schema, formData, rootSchema);
 
         // Root schema is added twice
-        expect(addSchemaSpy).toHaveBeenCalledTimes(2);
+        expect(addSchemaSpy).toHaveBeenCalledTimes(3);
         expect(addSchemaSpy).toHaveBeenNthCalledWith(1, expect.objectContaining(rootSchema), rootSchema.$id);
         expect(addSchemaSpy).toHaveBeenNthCalledWith(2, expect.objectContaining(schema), schema.$id);
+        expect(addSchemaSpy).toHaveBeenLastCalledWith(expect.objectContaining(rootSchema), rootSchema.$id);
       });
     });
     describe('validator.toErrorList()', () => {
@@ -1048,9 +1050,10 @@ describe('AJV8Validator', () => {
         validator.isValid(schema, formData, rootSchema);
 
         // Root schema is added twice
-        expect(addSchemaSpy).toHaveBeenCalledTimes(2);
+        expect(addSchemaSpy).toHaveBeenCalledTimes(3);
         expect(addSchemaSpy).toHaveBeenNthCalledWith(1, expect.objectContaining(rootSchema), rootSchema.$id);
         expect(addSchemaSpy).toHaveBeenNthCalledWith(2, expect.objectContaining(schema), schema.$id);
+        expect(addSchemaSpy).toHaveBeenLastCalledWith(expect.objectContaining(rootSchema), rootSchema.$id);
       });
     });
     describe('validator.toErrorList()', () => {
