@@ -48,6 +48,11 @@ export default class AJV8Validator<T = any, S extends StrictRJSFSchema = RJSFSch
      * @param [uiSchema] - An optional uiSchema that is passed to `transformErrors` and `customValidate`
      */
     validateFormData(formData: T | undefined, schema: S, customValidate?: CustomValidator<T, S, F>, transformErrors?: ErrorTransformer<T, S, F>, uiSchema?: UiSchema<T, S, F>): ValidationData<T>;
+    /**
+     * This function is called when the root schema changes. It removes the old root schema from the ajv instance and adds the new one.
+     * @param rootSchema - The root schema used to provide $ref resolutions
+     */
+    handleRootSchemaChange(rootSchema: S): void;
     /** Validates data against a schema, returning true if the data is valid, or
      * false otherwise. If the schema is invalid, then this function will return
      * false.

@@ -172,6 +172,15 @@
       const rawErrors = this.rawValidation(schema, formData);
       return processRawValidationErrors(this, rawErrors, formData, schema, customValidate, transformErrors, uiSchema);
     }
+    /**
+     * This function is called when the root schema changes. It removes the old root schema from the ajv instance and adds the new one.
+     * @param rootSchema - The root schema used to provide $ref resolutions
+     */
+    handleRootSchemaChange(rootSchema) {
+      const rootSchemaId = rootSchema[utils.ID_KEY] ?? utils.ROOT_SCHEMA_PREFIX;
+      this.ajv.removeSchema(rootSchemaId);
+      this.ajv.addSchema(rootSchema, rootSchemaId);
+    }
     /** Validates data against a schema, returning true if the data is valid, or
      * false otherwise. If the schema is invalid, then this function will return
      * false.
@@ -183,7 +192,11 @@
     isValid(schema, formData, rootSchema) {
       const rootSchemaId = rootSchema[utils.ID_KEY] ?? utils.ROOT_SCHEMA_PREFIX;
       try {
-        this.ajv.addSchema(rootSchema, rootSchemaId);
+        if (this.ajv.getSchema(rootSchemaId) === void 0) {
+          this.ajv.addSchema(rootSchema, rootSchemaId);
+        } else if (!utils.deepEquals(rootSchema, this.ajv.getSchema(rootSchemaId)?.schema)) {
+          this.handleRootSchemaChange(rootSchema);
+        }
         const schemaWithIdRefPrefix = utils.withIdRefPrefix(schema);
         const schemaId = schemaWithIdRefPrefix[utils.ID_KEY] ?? utils.hashForSchema(schemaWithIdRefPrefix);
         let compiledValidator;
@@ -196,8 +209,6 @@
       } catch (e) {
         console.warn("Error encountered compiling schema:", e);
         return false;
-      } finally {
-        this.ajv.removeSchema(rootSchemaId);
       }
     }
   };

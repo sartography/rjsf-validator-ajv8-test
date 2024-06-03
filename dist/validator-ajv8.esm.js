@@ -1,5 +1,6 @@
 // src/validator.ts
 import {
+  deepEquals,
   ID_KEY,
   ROOT_SCHEMA_PREFIX,
   toErrorList,
@@ -191,6 +192,15 @@ var AJV8Validator = class {
     const rawErrors = this.rawValidation(schema, formData);
     return processRawValidationErrors(this, rawErrors, formData, schema, customValidate, transformErrors, uiSchema);
   }
+  /**
+   * This function is called when the root schema changes. It removes the old root schema from the ajv instance and adds the new one.
+   * @param rootSchema - The root schema used to provide $ref resolutions
+   */
+  handleRootSchemaChange(rootSchema) {
+    const rootSchemaId = rootSchema[ID_KEY] ?? ROOT_SCHEMA_PREFIX;
+    this.ajv.removeSchema(rootSchemaId);
+    this.ajv.addSchema(rootSchema, rootSchemaId);
+  }
   /** Validates data against a schema, returning true if the data is valid, or
    * false otherwise. If the schema is invalid, then this function will return
    * false.
@@ -202,7 +212,11 @@ var AJV8Validator = class {
   isValid(schema, formData, rootSchema) {
     const rootSchemaId = rootSchema[ID_KEY] ?? ROOT_SCHEMA_PREFIX;
     try {
-      this.ajv.addSchema(rootSchema, rootSchemaId);
+      if (this.ajv.getSchema(rootSchemaId) === void 0) {
+        this.ajv.addSchema(rootSchema, rootSchemaId);
+      } else if (!deepEquals(rootSchema, this.ajv.getSchema(rootSchemaId)?.schema)) {
+        this.handleRootSchemaChange(rootSchema);
+      }
       const schemaWithIdRefPrefix = withIdRefPrefix(schema);
       const schemaId = schemaWithIdRefPrefix[ID_KEY] ?? hashForSchema(schemaWithIdRefPrefix);
       let compiledValidator;
@@ -215,8 +229,6 @@ var AJV8Validator = class {
     } catch (e) {
       console.warn("Error encountered compiling schema:", e);
       return false;
-    } finally {
-      this.ajv.removeSchema(rootSchemaId);
     }
   }
 };
